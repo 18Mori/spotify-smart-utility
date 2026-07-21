@@ -1,13 +1,18 @@
 import tkinter as tk
 
-# main window
-root = tk.Tk()
-root.title("My First Tkinter App")
-root.geometry("300x200")
-
-# Add a simple test text
-label = tk.Label(root, text="SPOTHASH!", font=("Arial", 16))
-label.pack(pady=50)
-
-# Start the app loop
-root.mainloop()
+class SpothashWidget:
+    def __init__(self):
+      self.root = tk.Tk()
+      
+      # Window setup: Dimensions and position
+      self.expanded_width = 150
+      self.collapsed_width = 5
+      self.height = 40
+      
+      self.screen_width = self.root.winfo_screenwidth()
+      self.screen_height = self.root.winfo_screenheight()
+      
+      
+if __name__ == "__main__":
+    app = SpothashWidget()
+    app.root.mainloop()
