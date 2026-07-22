@@ -10,7 +10,8 @@ class SpothashWidget:
     def __init__(self):
         self.root = tk.Tk()
         self.root.configure(bg="#191414")
-        # self.root.overrideredirect(True)
+        self.root.overrideredirect(True)
+        self.root.attributes("-topmost", True)
         self.root.resizable(False, False)
         
         self.geolocation = self.root.winfo_screenwidth() - 700, 100
@@ -50,7 +51,7 @@ class SpothashWidget:
                 parent=self.root
             )
         
-    #Media key trigger setup
+    #Media key trigger; dry callbacks calling the safe helper
     def play_pause(self):
             self.send_media_key("play/pause media")
             
