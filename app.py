@@ -15,8 +15,8 @@ class SpothashWidget:
         self.root.attributes("-topmost", True)
         self.root.resizable(False, False)
         
-        self.geolocation = self.root.winfo_screenwidth() - 700, 100
-        self.root.geometry(f"150x40+{self.geolocation[0]}+{self.geolocation[1]}")
+        # self.geolocation = self.root.winfo_screenwidth() - 700, 100
+        # self.root.geometry(f"150x40+{self.geolocation[0]}+{self.geolocation[1]}")
         
         # Dimensions
         self.expanded_width = 150
@@ -31,25 +31,42 @@ class SpothashWidget:
         
         # collapse/extend setup
         
-        self.root.geometry(f"{self.collapsed_width}x{self.height}+{self.x_collapsed}+{self.geolocation[1]}")
+        self.root.geometry(f"{self.collapsed_width}x{self.height}+{self.x_collapsed}+10")
         
-        self.root.configure(bd="#1DB954", highlightthickness=2)
+        self.root.configure(bg="#1DB954", highlightthickness=2)
         
-        
+        self.control_frame = tk.Frame(self.root, bg="#191414")
+        self.control_frame.pack(fill=tk.BOTH, expand=True)
 
         # Media button setup
-        btn_prev = tk.Button(self.root, text='⏮', command=self.prev_track, fg="white", bg="#191414", bd=0, font=("Arial", 11), activebackground="#191414", activeforeground="#1DB954", cursor="hand2")
+        btn_prev = tk.Button(self.control_frame, text='⏮', command=self.prev_track, fg="white", bg="#191414", bd=0, font=("Arial", 11), activebackground="#191414", activeforeground="#1DB954", cursor="hand2")
         
-        btn_play = tk.Button(self.root, text='⏯', command=self.play_pause, fg="#1DB954", bg="#191414", bd=0, font=("Arial", 11), activebackground="#191414", activeforeground="red")
+        btn_play = tk.Button(self.control_frame, text='⏯', command=self.play_pause, fg="#1DB954", bg="#191414", bd=0, font=("Arial", 11), activebackground="#191414", activeforeground="red")
         
-        btn_next = tk.Button(self.root, text='⏭', command=self.next_track, fg="white", bg="#191414", bd=0, font=("Arial", 11), activebackground="#191414", activeforeground="#1DB954", cursor="hand2")
+        btn_next = tk.Button(self.control_frame, text='⏭', command=self.next_track, fg="white", bg="#191414", bd=0, font=("Arial", 11), activebackground="#191414", activeforeground="#1DB954", cursor="hand2")
         
-        btn_exit = tk.Button(self.root, text='✖', command=self.root.destroy, fg="white", bg="#191414", bd=0, font=("Arial", 10), activebackground="#191414", activeforeground="red")
+        btn_exit = tk.Button(self.control_frame, text='✖', command=self.root.destroy, fg="white", bg="#191414", bd=0, font=("Arial", 10), activebackground="#191414", activeforeground="red")
         
         btn_prev.pack(side=tk.LEFT, padx=5, pady=5)
         btn_play.pack(side=tk.LEFT, padx=5, pady=5)
         btn_next.pack(side=tk.LEFT, padx=5, pady=5)
         btn_exit.pack(side=tk.LEFT, padx=5, pady=5)
+        
+        
+    def on_hover(self):
+        # Show the control frame on hover
+        self.control_frame.pack(fill=tk.BOTH, expand=True)
+        # Expand to full width on hover
+        self.root.geometry(f"{self.expanded_width}x{self.height}+{self.x_expanded}+10")
+            
+    def on_leave(self):
+        # Hide the control frame when the mouse leaves
+        self.control_frame.pack_forget()
+        # Return to collapsed state
+        self.root.geometry(f"{self.collapsed_width}x{self.height}+{self.x_collapsed}+10")
+        # Bind hover events to the root window
+        self.root.bind("<Enter>", self.on_hover)
+        self.root.bind("<Leave>", self.on_leave)
         
     def send_media_key(self, key_command: str) -> None:
         
