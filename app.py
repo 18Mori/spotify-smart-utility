@@ -9,6 +9,7 @@ logging.basicConfig(level=logging.ERROR, format="%(asctime)s [%(levelname)s] %(m
 class SpothashWidget:
     def __init__(self):
         self.root = tk.Tk()
+        
         self.root.configure(bg="#191414")
         self.root.overrideredirect(True)
         self.root.attributes("-topmost", True)
@@ -21,16 +22,18 @@ class SpothashWidget:
         self.screen_height = self.root.winfo_screenheight()
 
         # Media button setup
-        btn_prev = tk.Button(self.root, text='⏮', command=self.prev_track, fg="white", bg="#191414", bd=0, font=("Arial", 15))
+        btn_prev = tk.Button(self.root, text='⏮', command=self.prev_track, fg="white", bg="#191414", bd=0, font=("Arial", 11), activebackground="#191414", activeforeground="#1DB954", cursor="hand2")
         
-        btn_play = tk.Button(self.root, text='⏯', command=self.play_pause, fg="#1DB954", bg="#191414", bd=0, font=("Arial", 15))
+        btn_play = tk.Button(self.root, text='⏯', command=self.play_pause, fg="#1DB954", bg="#191414", bd=0, font=("Arial", 11), activebackground="#191414", activeforeground="red")
         
-        btn_next = tk.Button(self.root, text='⏭', command=self.next_track, fg="white", bg="#191414", bd=0, font=("Arial", 15))
+        btn_next = tk.Button(self.root, text='⏭', command=self.next_track, fg="white", bg="#191414", bd=0, font=("Arial", 11), activebackground="#191414", activeforeground="#1DB954", cursor="hand2")
         
-        btn_prev.pack(side=tk.LEFT, padx=5)
-        btn_play.pack(side=tk.LEFT, padx=5)
-        btn_next.pack(side=tk.LEFT, padx=5)
+        btn_exit = tk.Button(self.root, text='✖', command=self.root.destroy, fg="white", bg="#191414", bd=0, font=("Arial", 10), activebackground="#191414", activeforeground="red")
         
+        btn_prev.pack(side=tk.LEFT, padx=5, pady=5)
+        btn_play.pack(side=tk.LEFT, padx=5, pady=5)
+        btn_next.pack(side=tk.LEFT, padx=5, pady=5)
+        btn_exit.pack(side=tk.LEFT, padx=5, pady=5)
         
     def send_media_key(self, key_command: str) -> None:
         
@@ -61,8 +64,12 @@ class SpothashWidget:
     def next_track(self):
             self.send_media_key("next track")
             
-        
+            
+    def run(self):
+        self.root.mainloop()
+            
 
 if __name__ == "__main__":
     app = SpothashWidget()
-    app.root.mainloop()
+    
+    app.run()
