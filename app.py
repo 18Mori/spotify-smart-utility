@@ -3,8 +3,8 @@ import keyboard, logging
 from tkinter import messagebox
 
 
-# Configure lightweight logging for runtime debugging
-logging.basicConfig(level=logging.ERROR, format="%(asctime)s [%(levelname)s] %(message)s")
+# Configure logging for safe error reporting without crashing the app
+logger = logging.getLogger(__name__)
 
 class SpothashWidget:
     def __init__(self):
@@ -16,10 +16,10 @@ class SpothashWidget:
         self.root.resizable(False, False)
         self.root.wm_attributes("-alpha", 0.9)
         
-        self.geolocation = self.root.winfo_screenwidth() - 700, 100
-        self.root.geometry(f"150x40+{self.geolocation[0]}+{self.geolocation[1]}")
+        self.geolocation = self.root.winfo_screenwidth() - 700, self.y_position
         
         # Dimensions
+        self.y_position = 100
         self.expanded_width = 155
         self.collapsed_width = 5
         self.height = 40
@@ -29,24 +29,21 @@ class SpothashWidget:
         self.x_collapsed = self.screen_width - self.collapsed_width
         self.x_expanded = self.screen_width - self.expanded_width
         
-        
-        # collapse/extend setup
-        
-        self.root.geometry(f"{self.collapsed_width}x{self.height}+{self.x_collapsed}+{self.geolocation[1]}")
-        # 
+        # Initial window positioning (start collapsed)
+        self.root.geometry(f"{self.collapsed_width}x{self.height}+{self.x_collapsed}+{self.y_position}")
         self.root.configure(bg="#1DB954", highlightthickness=1, highlightbackground="#1DB954", highlightcolor="#1DB954")
         
+        # Create control frame (DO NOT pack here so it starts truly collapsed)
         self.control_frame = tk.Frame(self.root, bg="#191414")
-        self.control_frame.pack(fill=tk.BOTH, expand=True)
 
         # Media button setup
         btn_prev = tk.Button(self.control_frame, text='⏮', command=self.prev_track, fg="white", bg="#191414", bd=0, font=("Arial", 11), activebackground="#191414", activeforeground="#1DB954", cursor="hand2")
         
-        btn_play = tk.Button(self.control_frame, text='⏯', command=self.play_pause, fg="#1DB954", bg="#191414", bd=0, font=("Arial", 15), activebackground="#191414", activeforeground="red")
+        btn_play = tk.Button(self.control_frame, text='⏯', command=self.play_pause, fg="#1DB954", bg="#191414", bd=0, font=("Arial", 15), activebackground="#191414", activeforeground="red", cursor="hand2")
         
         btn_next = tk.Button(self.control_frame, text='⏭', command=self.next_track, fg="white", bg="#191414", bd=0, font=("Arial", 11), activebackground="#191414", activeforeground="#1DB954", cursor="hand2")
         
-        btn_exit = tk.Button(self.control_frame, text='✖', command=self.root.destroy, fg="white", bg="#191414", bd=0, font=("Arial", 10), activebackground="#191414", activeforeground="red")
+        btn_exit = tk.Button(self.control_frame, text='✖', command=self.root.destroy, fg="white", bg="#191414", bd=0, font=("Arial", 10), activebackground="#191414", activeforeground="red", cursor="hand2")
         
         btn_prev.pack(side=tk.LEFT, padx=5, pady=5)
         btn_play.pack(side=tk.LEFT, padx=5, pady=5)
@@ -61,21 +58,20 @@ class SpothashWidget:
         # Show the control frame on hover
         self.control_frame.pack(fill=tk.BOTH, expand=True)
         # Expand to full width on hover
-        self.root.geometry(f"{self.expanded_width}x{self.height}+{self.x_expanded}+{self.geolocation[1]}")
+        self.root.geometry(f"{self.expanded_width}x{self.height}+{self.x_expanded}+{self.y_position}")
             
     def on_leave(self, event):
         # Hide the control frame when the mouse leaves
         self.control_frame.pack_forget()
         # Return to collapsed state
-        self.root.geometry(f"{self.collapsed_width}x{self.height}+{self.x_collapsed}+{self.geolocation[1]}")
+        self.root.geometry(f"{self.collapsed_width}x{self.height}+{self.x_collapsed}+{self.y_position}")
         
     def send_media_key(self, key_command: str) -> None:
-        
         try:
             keyboard.send(key_command)
         except Exception as e:
             error_msg = f"Failed to send media key command '{key_command}': {e}"
-            logging.error(error_msg)
+            logger.error(error_msg)
             
             # Non-fatal user feedback dialog
             messagebox.showerror(
@@ -88,22 +84,22 @@ class SpothashWidget:
                 parent=self.root
             )
         
-    #Media key triggers media events; dry callbacks calling the safe helper
     def play_pause(self):
-            self.send_media_key("play/pause media")
+        self.send_media_key("play/pause media")
             
     def prev_track(self):
-            self.send_media_key("previous track")
+        self.send_media_key("previous track")
             
     def next_track(self):
-            self.send_media_key("next track")
-            
+        self.send_media_key("next track")
             
     def run(self):
         self.root.mainloop()
-            
+
 
 if __name__ == "__main__":
-    app = SpothashWidget()
+    # Configure lightweight logging for runtime debugging
+    logging.basicConfig(level=logging.ERROR, format="%(asctime)s [%(levelname)s] %(message)s")
     
+    app = SpothashWidget()
     app.run()
