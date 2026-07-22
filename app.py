@@ -18,8 +18,24 @@ class SpothashWidget:
         self.geolocation = self.root.winfo_screenwidth() - 700, 100
         self.root.geometry(f"150x40+{self.geolocation[0]}+{self.geolocation[1]}")
         
+        # Dimensions
+        self.expanded_width = 150
+        self.collapsed_width = 5
+        self.height = 40
+
+        # Screen positioning (Top Right)
         self.screen_width = self.root.winfo_screenwidth()
-        self.screen_height = self.root.winfo_screenheight()
+        self.x_collapsed = self.screen_width - self.collapsed_width
+        self.x_expanded = self.screen_width - self.expanded_width
+        
+        
+        # collapse/extend setup
+        
+        self.root.geometry(f"{self.collapsed_width}x{self.height}+{self.x_collapsed}+{self.geolocation[1]}")
+        
+        self.root.configure(bd="#1DB954", highlightthickness=2)
+        
+        
 
         # Media button setup
         btn_prev = tk.Button(self.root, text='⏮', command=self.prev_track, fg="white", bg="#191414", bd=0, font=("Arial", 11), activebackground="#191414", activeforeground="#1DB954", cursor="hand2")
@@ -54,7 +70,7 @@ class SpothashWidget:
                 parent=self.root
             )
         
-    #Media key trigger; dry callbacks calling the safe helper
+    #Media key triggers media events; dry callbacks calling the safe helper
     def play_pause(self):
             self.send_media_key("play/pause media")
             
