@@ -16,7 +16,6 @@ class SpothashWidget:
         self.root.resizable(False, False)
         self.root.wm_attributes("-alpha", 0.9)
         
-        self.geolocation = self.root.winfo_screenwidth() - 700, self.y_position
         
         # Dimensions
         self.y_position = 100
