@@ -1,4 +1,7 @@
+comtypes==1.4.16
 customtkinter==6.0.0
 darkdetect==0.8.0
 keyboard==0.13.5
 packaging==26.2
+psutil==7.2.2
+pycaw==20251023

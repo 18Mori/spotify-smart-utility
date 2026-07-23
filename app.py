@@ -16,7 +16,6 @@ class SpothashWidget:
         self.root.resizable(False, False)
         self.root.wm_attributes("-alpha", 0.9)
         
-        
         # Dimensions
         self.y_position = 100
         self.expanded_width = 155
@@ -42,22 +41,26 @@ class SpothashWidget:
         
         btn_next = tk.Button(self.control_frame, text='⏭', command=self.next_track, fg="white", bg="#191414", bd=0, font=("Arial", 11), activebackground="#191414", activeforeground="#1DB954", cursor="hand2")
         
-        btn_exit = tk.Button(self.control_frame, text='✖', command=self.root.destroy, fg="white", bg="#191414", bd=0, font=("Arial", 10), activebackground="#191414", activeforeground="red", cursor="hand2")
+        #  calls custom on_close method to ensure clean shutdown
+        btn_exit = tk.Button(self.control_frame, text='✖', command=self.on_close, fg="white", bg="#191414", bd=0, font=("Arial", 10), activebackground="#191414", activeforeground="red", cursor="hand2")
         
-        btn_prev.pack(side=tk.LEFT, padx=5, pady=5)
-        btn_play.pack(side=tk.LEFT, padx=5, pady=5)
-        btn_next.pack(side=tk.LEFT, padx=5, pady=5)
-        btn_exit.pack(side=tk.LEFT, padx=5, pady=5)
+        btn_prev.pack(side=tk.LEFT, fill="both", expand=True)
+        btn_play.pack(side=tk.LEFT, fill="both", expand=True)
+        btn_next.pack(side=tk.LEFT, fill="both", expand=True)
+        btn_exit.pack(side=tk.LEFT, fill="both", expand=True)
         
         # Bind hover events to the root window
         self.root.bind("<Enter>", self.on_hover)
         self.root.bind("<Leave>", self.on_leave)
         
+        # Catch standard OS close signals
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+        
     def on_hover(self, event):
-        # Show the control frame on hover
-        self.control_frame.pack(fill=tk.BOTH, expand=True)
-        # Expand to full width on hover
+        # expand window geometry 1st to prevent flickering
         self.root.geometry(f"{self.expanded_width}x{self.height}+{self.x_expanded}+{self.y_position}")
+        # show the control frame after space is created
+        self.control_frame.pack(fill=tk.BOTH, expand=True)
             
     def on_leave(self, event):
         # Hide the control frame when the mouse leaves
@@ -91,6 +94,9 @@ class SpothashWidget:
             
     def next_track(self):
         self.send_media_key("next track")
+
+    def on_close(self):
+        self.root.destroy()
             
     def run(self):
         self.root.mainloop()
