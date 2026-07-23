@@ -7,8 +7,9 @@ from tkinter import messagebox
 logger = logging.getLogger(__name__)
 
 class SpothashWidget:
-    def __init__(self):
+    def __init__(self, on_close_callback=None):
         self.root = tk.Tk()
+        self.on_close_callback = on_close_callback
         
         self.root.configure(bg="#191414")
         self.root.overrideredirect(True)
@@ -44,15 +45,23 @@ class SpothashWidget:
         
         btn_exit = tk.Button(self.control_frame, text='✖', command=self.root.destroy, fg="white", bg="#191414", bd=0, font=("Arial", 10), activebackground="#191414", activeforeground="red", cursor="hand2")
         
-        btn_prev.pack(side=tk.LEFT, padx=5, pady=5)
-        btn_play.pack(side=tk.LEFT, padx=5, pady=5)
-        btn_next.pack(side=tk.LEFT, padx=5, pady=5)
-        btn_exit.pack(side=tk.LEFT, padx=5, pady=5)
+        btn_prev.pack(side=tk.LEFT, fill="both", expand=True)
+        btn_play.pack(side=tk.LEFT, fill="both", expand=True)
+        btn_next.pack(side=tk.LEFT, fill="both", expand=True)
+        btn_exit.pack(side=tk.LEFT, fill="both", expand=True)
         
         # Bind hover events to the root window
         self.root.bind("<Enter>", self.on_hover)
         self.root.bind("<Leave>", self.on_leave)
         
+    def handle_close(self):
+        if callable(self.on_close_callback):
+            try:
+                self.on_close_callback()
+            except Exception:
+                logger.exception("Error during on_close_callback execution")
+        self.root.destroy()
+
     def on_hover(self, event):
         # Show the control frame on hover
         self.control_frame.pack(fill=tk.BOTH, expand=True)
