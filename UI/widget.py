@@ -43,12 +43,15 @@ class SpothashWidget:
         
         btn_next = tk.Button(self.control_frame, text='⏭', command=self.next_track, fg="white", bg="#191414", bd=0, font=("Arial", 11), activebackground="#191414", activeforeground="#1DB954", cursor="hand2")
         
-        btn_exit = tk.Button(self.control_frame, text='✖', command=self.root.destroy, fg="white", bg="#191414", bd=0, font=("Arial", 10), activebackground="#191414", activeforeground="red", cursor="hand2")
+        btn_exit = tk.Button(self.control_frame, text='✖', command=self.handle_close, fg="white", bg="#191414", bd=0, font=("Arial", 10), activebackground="#191414", activeforeground="red", cursor="hand2")
         
         btn_prev.pack(side=tk.LEFT, fill="both", expand=True)
         btn_play.pack(side=tk.LEFT, fill="both", expand=True)
         btn_next.pack(side=tk.LEFT, fill="both", expand=True)
         btn_exit.pack(side=tk.LEFT, fill="both", expand=True)
+        
+        # Bind window manager close protocol to handle_close
+        self.root.protocol("WM_DELETE_WINDOW", self.handle_close)
         
         # Bind hover events to the root window
         self.root.bind("<Enter>", self.on_hover)
