@@ -9,21 +9,23 @@ def restore_volume(initial_vol):
     try:
         for session in get_audio_sessions():
             if session.Process and "spotify.exe" in session.Process.name().lower():
-                volume_control = session.SimpleAudioVolume
-                volume_control.SetMasterVolume(initial_vol, None)
-                print(f"Spotify volume restored to {initial_vol}.")
+                session.SimpleAudioVolume.SetMasterVolume(initial_vol, None)
+                print(f"Spotify volume restored to {initial_vol * 100:.0f}%.")
                 break
     except Exception as e:
         print(f"Error restoring volume on exit: {e}")
 
 def monitor_audio(stop_event=None):
+    if stop_event is None:
+        stop_event = threading.Event()
+        
     spot_initial_vol = 1.0  # tracks the normal volume
     ducked = False
     
     print("Monitoring audio sessions...")
     
     try:
-        while not (stop_event and stop_event.is_set()):
+        while not stop_event.is_set():
             sessions = get_audio_sessions() # gets all audio sessions
             spot_session = None
             other_active_audio = False
@@ -41,7 +43,6 @@ def monitor_audio(stop_event=None):
                 volume_control = spot_session.SimpleAudioVolume
                 
                 if other_active_audio and not ducked:
-                    # Save current volume and duck it to 15%
                     spot_initial_vol = volume_control.GetMasterVolume()
                     # Ensure we don't accidentally save an already ducked state as normal.
                     if spot_initial_vol > 0.0: 
@@ -55,11 +56,8 @@ def monitor_audio(stop_event=None):
                     ducked = False
                     print("Spotify volume restored.")
                     
-            if stop_event:
-                if stop_event.is_set(): # Check if the stop event is set to exit the loop
-                    break
-                else:
-                    time.sleep(0.5)  # it breaks out immediately when the event is set rather than waiting out the sleep timer
+            if stop_event.wait(timeout=0.5): # Wait for 0.5 seconds or until the stop_event is set
+                break
     except KeyboardInterrupt:
         print("\nAudio monitoring STOPPED...!")
         
@@ -69,5 +67,3 @@ def monitor_audio(stop_event=None):
 
 if __name__ == "__main__":
     monitor_audio()
-    
-    stop_event = threading.Event()
