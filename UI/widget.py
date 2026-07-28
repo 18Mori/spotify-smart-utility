@@ -7,14 +7,16 @@ from tkinter import messagebox
 logger = logging.getLogger(__name__)
 
 class SpothashWidget:
-    def __init__(self):
+    def __init__(self, on_close_callback=None):
         self.root = tk.Tk()
+        self.on_close_callback = on_close_callback
         
         self.root.configure(bg="#191414")
         self.root.overrideredirect(True)
         self.root.attributes("-topmost", True)
         self.root.resizable(False, False)
         self.root.wm_attributes("-alpha", 0.9)
+        
         
         # Dimensions
         self.y_position = 100
@@ -41,26 +43,33 @@ class SpothashWidget:
         
         btn_next = tk.Button(self.control_frame, text='⏭', command=self.next_track, fg="white", bg="#191414", bd=0, font=("Arial", 11), activebackground="#191414", activeforeground="#1DB954", cursor="hand2")
         
-        #  calls custom on_close method to ensure clean shutdown
-        btn_exit = tk.Button(self.control_frame, text='✖', command=self.on_close, fg="white", bg="#191414", bd=0, font=("Arial", 10), activebackground="#191414", activeforeground="red", cursor="hand2")
+        btn_exit = tk.Button(self.control_frame, text='✖', command=self.handle_close, fg="white", bg="#191414", bd=0, font=("Arial", 10), activebackground="#191414", activeforeground="red", cursor="hand2")
         
         btn_prev.pack(side=tk.LEFT, fill="both", expand=True)
         btn_play.pack(side=tk.LEFT, fill="both", expand=True)
         btn_next.pack(side=tk.LEFT, fill="both", expand=True)
         btn_exit.pack(side=tk.LEFT, fill="both", expand=True)
         
+        # Bind window manager close protocol to handle_close
+        self.root.protocol("WM_DELETE_WINDOW", self.handle_close)
+        
         # Bind hover events to the root window
         self.root.bind("<Enter>", self.on_hover)
         self.root.bind("<Leave>", self.on_leave)
         
-        # Catch standard OS close signals
-        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
-        
+    def handle_close(self):
+        if callable(self.on_close_callback):
+            try:
+                self.on_close_callback()
+            except Exception:
+                logger.exception("Error during on_close_callback execution")
+        self.root.destroy()
+
     def on_hover(self, event):
-        # expand window geometry 1st to prevent flickering
-        self.root.geometry(f"{self.expanded_width}x{self.height}+{self.x_expanded}+{self.y_position}")
-        # show the control frame after space is created
+        # Show the control frame on hover
         self.control_frame.pack(fill=tk.BOTH, expand=True)
+        # Expand to full width on hover
+        self.root.geometry(f"{self.expanded_width}x{self.height}+{self.x_expanded}+{self.y_position}")
             
     def on_leave(self, event):
         # Hide the control frame when the mouse leaves
@@ -94,9 +103,6 @@ class SpothashWidget:
             
     def next_track(self):
         self.send_media_key("next track")
-
-    def on_close(self):
-        self.root.destroy()
             
     def run(self):
         self.root.mainloop()
