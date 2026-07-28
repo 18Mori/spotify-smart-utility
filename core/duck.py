@@ -1,4 +1,5 @@
 import threading
+import pythoncom
 from pycaw.pycaw import AudioUtilities
 
 def get_audio_sessions():
@@ -21,6 +22,9 @@ def restore_volume(initial_vol):
         print(f"Error restoring volume on exit: {e}")
 
 def monitor_audio(stop_event=None):
+    # Initialize COM library for this specific thread
+    pythoncom.CoInitialize()
+    
     if stop_event is None:
         stop_event = threading.Event()
         
@@ -75,6 +79,8 @@ def monitor_audio(stop_event=None):
     finally:
         if ducked:
             restore_volume(spot_initial_vol) # Restore Spotify volume to the initial volume on exit
+            # Clean up COM resources on thread exit
+        pythoncom.CoUninitialize()
 
 if __name__ == "__main__":
     monitor_audio()
