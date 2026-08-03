@@ -16,7 +16,7 @@ def restore_volume(initial_vol):
         for session in get_audio_sessions():
             if session.Process and "spotify.exe" in session.Process.name().lower():
                 session.SimpleAudioVolume.SetMasterVolume(initial_vol, None)
-                print(f"Spotify volume restored to {initial_vol * 100:.0f}%.")
+                print(f"Spotify volume restored to {initial_vol * 100:.0f}% on exit.")
                 break
     except Exception as e:
         print(f"Error restoring volume on exit: {e}")
@@ -37,7 +37,7 @@ def monitor_audio(stop_event=None):
         while not stop_event.is_set():
             sessions = get_audio_sessions() # gets all audio sessions
             spot_session = None
-            other_active_audio = False
+            apps_trigger_active = []  # List to track other apps playing audio
             # Loop through (Inspect) all audio sessions to find Spotify and check for other active audio
             for session in sessions:
                 try:
@@ -47,27 +47,29 @@ def monitor_audio(stop_event=None):
                         if "spotify.exe" in process_name:
                             spot_session = session
                         elif session.State == 1: # Active session audio -- actively playing
-                            other_active_audio = True
+                            apps_trigger_active.append(session.Process.name())
                 except Exception:
                     continue
 
             if spot_session:
                 try:
                     volume_control = spot_session.SimpleAudioVolume
+                    current_vol = volume_control.GetMasterVolume()
                     
-                    if other_active_audio and not ducked:
-                        spot_initial_vol = volume_control.GetMasterVolume()
-                        # Ensure we don't accidentally save an already ducked state as normal.
-                        if spot_initial_vol > 0.0: 
-                            volume_control.SetMasterVolume(0.15, None)
-                            ducked = True
-                            print("Spotify ducked to 15%.")
+                    if apps_trigger_active and not ducked:
+                        if current_vol > 0.15:  # it only ducks, if the current volume is above 15%
+                            spot_initial_vol = current_vol
+                        
+                        volume_control.SetMasterVolume(0.15, None)
+                        ducked = True
+                        app_name = ", ".join(set(apps_trigger_active))
+                        print(f"Audio detected from [{app_name}]. Spotify ducked to 15%.")
                             
-                    elif not other_active_audio and ducked:
+                    elif not apps_trigger_active and ducked:
                         # Restore original volume
                         volume_control.SetMasterVolume(spot_initial_vol, None)
                         ducked = False
-                        print("Spotify volume restored.")
+                        print(f"Spotify volume restored to {spot_initial_vol * 100:.0f}%.")
                 except Exception as e:
                     print(f"Error adjusting Spotify volume: {e}")
                     

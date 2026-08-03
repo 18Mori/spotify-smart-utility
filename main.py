@@ -1,5 +1,5 @@
 import threading
-from ui.widget import SpothashWidget
+from UI.widget import SpothashWidget
 from core.duck import monitor_audio
 
 
