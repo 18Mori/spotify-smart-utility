@@ -1,6 +1,23 @@
 import threading
 import pythoncom
+import os
 from pycaw.pycaw import AudioUtilities
+
+CONFIG_FILE = "ignored_apps.txt"
+
+def excluded_apps():
+    ignored = set() # Read ignored apps from the configuration file
+    if os.path.exists(CONFIG_FILE): # Check if the configuration file exists
+        try:
+            with open(CONFIG_FILE, "r") as f:
+                for line in f:
+                    line = line.strip().lower()
+                    # Ignore empty lines and comment lines starting with '#'
+                    if line and not line.startswith("#"):
+                        ignored.add(line)
+        except Exception as e:
+            print(f"Warning: Could not read {CONFIG_FILE}: {e}")
+    return ignored # Return the set of ignored app names
 
 def get_audio_sessions():
     # fetches all active audio sessions
@@ -46,6 +63,8 @@ def monitor_audio(stop_event=None):
                         """Check if the session is Spotify or another app playing audio -- it's important to check for other apps first to avoid ducking Spotify when it's the only one playing. It's the key to avoid a feedback loop where Spotify ducks itself."""
                         if "spotify.exe" in process_name:
                             spot_session = session
+                        elif process_name in excluded_apps():
+                            continue  # Skip ignored apps
                         elif session.State == 1: # Active session audio -- actively playing
                             apps_trigger_active.append(session.Process.name())
                 except Exception:
