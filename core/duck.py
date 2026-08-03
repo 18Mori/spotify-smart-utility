@@ -1,7 +1,8 @@
-import threading
-import pythoncom
-import os
+import logging, os, threading, pythoncom
 from pycaw.pycaw import AudioUtilities
+
+# Configure logger instance for this module
+logger = logging.getLogger(__name__)
 
 CONFIG_FILE = "ignored_apps.txt"
 
@@ -16,7 +17,7 @@ def excluded_apps():
                     if line and not line.startswith("#"):
                         ignored.add(line)
         except Exception as e:
-            print(f"Warning: Could not read {CONFIG_FILE}: {e}")
+            logger.warning("Could not read %s: %s", CONFIG_FILE, e)
     return ignored # Return the set of ignored app names
 
 def get_audio_sessions():
@@ -24,7 +25,7 @@ def get_audio_sessions():
     try:
         return AudioUtilities.GetAllSessions()
     except Exception as e:
-        print(f"Error fetching audio sessions: {e}")
+        logger.error("Error fetching audio sessions: %s", e)
         return []
 
 def restore_volume(initial_vol):
@@ -33,10 +34,10 @@ def restore_volume(initial_vol):
         for session in get_audio_sessions():
             if session.Process and "spotify.exe" in session.Process.name().lower():
                 session.SimpleAudioVolume.SetMasterVolume(initial_vol, None)
-                print(f"Spotify volume restored to {initial_vol * 100:.0f}% on exit.")
+                logger.info("Spotify volume restored to %.0f%% on exit.", initial_vol * 100)
                 break
     except Exception as e:
-        print(f"Error restoring volume on exit: {e}")
+        logger.error("Error restoring volume on exit: %s", e)
 
 def monitor_audio(stop_event=None):
     # Initialize COM library for this specific thread
@@ -48,7 +49,7 @@ def monitor_audio(stop_event=None):
     spot_initial_vol = 1.0  # tracks the normal volume
     ducked = False
     
-    print("Monitoring audio sessions...")
+    logger.info("Monitoring audio sessions...")
     
     try:
         while not stop_event.is_set():
@@ -82,20 +83,20 @@ def monitor_audio(stop_event=None):
                         volume_control.SetMasterVolume(0.15, None)
                         ducked = True
                         app_name = ", ".join(set(apps_trigger_active))
-                        print(f"Audio detected from [{app_name}]. Spotify ducked to 15%.")
+                        logger.info("Audio detected from [%s]. Spotify ducked to 15%%.", app_name)
                             
                     elif not apps_trigger_active and ducked:
                         # Restore original volume
                         volume_control.SetMasterVolume(spot_initial_vol, None)
                         ducked = False
-                        print(f"Spotify volume restored to {spot_initial_vol * 100:.0f}%.")
+                        logger.info("Spotify volume restored to %.0f%%.", spot_initial_vol * 100)
                 except Exception as e:
-                    print(f"Error adjusting Spotify volume: {e}")
+                    logger.error("Error adjusting Spotify volume: %s", e)
                     
             if stop_event.wait(timeout=0.5): # Wait for 0.5 seconds or until the stop_event is set -- checks for stop signal
                 break
     except KeyboardInterrupt:
-        print("\nAudio monitoring STOPPED...!")
+        logger.info("Audio monitoring STOPPED...!")
         
     finally:
         if ducked:
@@ -104,4 +105,9 @@ def monitor_audio(stop_event=None):
         pythoncom.CoUninitialize()
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S"
+    )
     monitor_audio()
