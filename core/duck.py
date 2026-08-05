@@ -1,6 +1,7 @@
 import logging, os, threading, pythoncom
 from pycaw.pycaw import AudioUtilities
 from core.config import ConfigManager
+from core.logger import setup_logging
 
 # Configure logger instance for this module
 logger = logging.getLogger(__name__)
@@ -100,9 +101,5 @@ def monitor_audio(stop_event=None):
         pythoncom.CoUninitialize()
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s [%(levelname)s] %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S"
-    )
+    setup_logging()
     monitor_audio()

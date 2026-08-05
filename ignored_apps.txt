@@ -1,18 +1,2 @@
 # Audio Processing
 fxsound.exe
-equalizerapo.exe
-audiodg.exe
-steelseries-sonar.exe
-nahimic2dev.exe
-nahimicservice.exe
-wavesmaxxaudio.exe
-realtek.exe
-rtkngui64.exe
-spatialaudio.exe
-
-# Virtual Cables & System
-voicemeeter.exe
-voicemeeterpro.exe
-voicemeeter8k.exe
-system.exe
-svchost.exe
