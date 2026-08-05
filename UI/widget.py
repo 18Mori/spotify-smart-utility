@@ -110,7 +110,9 @@ class SpothashWidget:
 
 if __name__ == "__main__":
     # Configure lightweight logging for runtime debugging
-    logging.basicConfig(level=logging.ERROR, format="%(asctime)s [%(levelname)s] %(message)s")
+    logging.basicConfig(
+        level=logging.ERROR,
+        format="%(asctime)s [%(levelname)s] %(message)s")
     
     app = SpothashWidget()
     app.run()
