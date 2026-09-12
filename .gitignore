@@ -197,3 +197,7 @@ pyrightconfig.json
 
 !__init__.py
 # End of https://www.toptal.com/developers/gitignore/api/python
+
+DEVELOPMENT.md
+DIRECTORY_LAYOUT.md
+ARCHITECTURE.md

@@ -1,6 +1,8 @@
 import tkinter as tk
 import keyboard, logging
 from tkinter import messagebox
+from core.startup_manager import StartupManager
+from core.settings_manager import SettingsManager
 
 
 # Configure logging for safe error reporting without crashing the app
@@ -11,6 +13,13 @@ class SpothashWidget:
         self.root = tk.Tk()
         self.on_close_callback = on_close_callback
         
+        self.startup_manager = StartupManager()
+        self.settings_manager = SettingsManager()
+        
+        # Sync initial startup state
+        is_startup = self.startup_manager.is_startup_enabled()
+        self.settings_manager.set("startup_enabled", is_startup)
+        
         self.root.configure(bg="#191414")
         self.root.overrideredirect(True)
         self.root.attributes("-topmost", True)
@@ -20,7 +29,7 @@ class SpothashWidget:
         
         # Dimensions
         self.y_position = 100
-        self.expanded_width = 155
+        self.expanded_width = 190
         self.collapsed_width = 5
         self.height = 40
 
@@ -43,11 +52,15 @@ class SpothashWidget:
         
         btn_next = tk.Button(self.control_frame, text='⏭', command=self.next_track, fg="white", bg="#191414", bd=0, font=("Arial", 11), activebackground="#191414", activeforeground="#1DB954", cursor="hand2")
         
+        startup_fg = "#1DB954" if is_startup else "#888888"
+        self.btn_startup = tk.Button(self.control_frame, text='🚀', command=self.toggle_startup, fg=startup_fg, bg="#191414", bd=0, font=("Arial", 11), activebackground="#191414", activeforeground="#1DB954", cursor="hand2")
+        
         btn_exit = tk.Button(self.control_frame, text='✖', command=self.handle_close, fg="white", bg="#191414", bd=0, font=("Arial", 10), activebackground="#191414", activeforeground="red", cursor="hand2")
         
         btn_prev.pack(side=tk.LEFT, fill="both", expand=True)
         btn_play.pack(side=tk.LEFT, fill="both", expand=True)
         btn_next.pack(side=tk.LEFT, fill="both", expand=True)
+        self.btn_startup.pack(side=tk.LEFT, fill="both", expand=True)
         btn_exit.pack(side=tk.LEFT, fill="both", expand=True)
         
         # Bind window manager close protocol to handle_close
@@ -56,6 +69,27 @@ class SpothashWidget:
         # Bind hover events to the root window
         self.root.bind("<Enter>", self.on_hover)
         self.root.bind("<Leave>", self.on_leave)
+        
+    def toggle_startup(self):
+        current_state = self.settings_manager.get("startup_enabled", False)
+        new_state = not current_state
+        success = self.startup_manager.set_startup(new_state)
+        if success:
+            self.settings_manager.set("startup_enabled", new_state)
+            fg_color = "#1DB954" if new_state else "#888888"
+            self.btn_startup.configure(fg=fg_color)
+            status_str = "enabled" if new_state else "disabled"
+            messagebox.showinfo(
+                title="SpotHash - Startup Settings",
+                message=f"System startup has been successfully {status_str}.",
+                parent=self.root
+            )
+        else:
+            messagebox.showerror(
+                title="SpotHash - Startup Error",
+                message="Failed to update system startup preference. Check permissions.",
+                parent=self.root
+            )
         
     def handle_close(self):
         if callable(self.on_close_callback):
