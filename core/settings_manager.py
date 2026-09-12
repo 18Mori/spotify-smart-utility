@@ -38,6 +38,6 @@ class SettingsManager:
     def get(self, key, default=None):
         return self.settings.get(key, default)
 
-    def set(self, key, value):
+    def set(self, key, value) -> bool:
         self.settings[key] = value
-        self.save_settings()
+        return self.save_settings()

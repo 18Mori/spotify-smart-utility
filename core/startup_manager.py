@@ -14,17 +14,24 @@ class StartupManager:
         self.app_name = app_name
         self.os_type = platform.system().lower()
 
-    def get_executable_path(self) -> str:
+    def get_startup_command(self) -> str:
         """
-        Returns the absolute path to the running executable or script.
-        Ensures startup points to the compiled PyInstaller binary when packaged.
+        Returns the complete startup command string:
+        sys.executable for frozen builds, or safely quoted sys.executable + script path for source builds.
         """
         if getattr(sys, 'frozen', False):
-            # Running as compiled PyInstaller bundle
-            return sys.executable
+            return f'"{sys.executable}"'
         else:
-            # Running as raw script
-            return os.path.abspath(sys.argv[0])
+            return f'"{sys.executable}" "{os.path.abspath(sys.argv[0])}"'
+
+    def get_program_arguments(self) -> list[str]:
+        """
+        Returns program arguments list for macOS plist.
+        """
+        if getattr(sys, 'frozen', False):
+            return [sys.executable]
+        else:
+            return [sys.executable, os.path.abspath(sys.argv[0])]
 
     def is_startup_enabled(self) -> bool:
         """Checks if the application is currently registered for system startup."""
@@ -59,9 +66,8 @@ class StartupManager:
         try:
             with winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_READ) as key:
                 val, _ = winreg.QueryValueEx(key, self.app_name)
-                current_path = self.get_executable_path()
-                # Normalize paths for comparison
-                return os.path.normpath(val.strip('"')) == os.path.normpath(current_path)
+                expected = self.get_startup_command()
+                return val.strip().lower() == expected.strip().lower()
         except FileNotFoundError:
             return False
         except Exception as e:
@@ -71,12 +77,12 @@ class StartupManager:
     def _set_windows_registry(self, enable: bool) -> bool:
         import winreg
         key_path = r"Software\Microsoft\Windows\CurrentVersion\Run"
-        exe_path = f'"{self.get_executable_path()}"'
+        cmd = self.get_startup_command()
         try:
             with winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_SET_VALUE) as key:
                 if enable:
-                    winreg.SetValueEx(key, self.app_name, 0, winreg.REG_SZ, exe_path)
-                    logger.info("Added to Windows Registry startup: %s", exe_path)
+                    winreg.SetValueEx(key, self.app_name, 0, winreg.REG_SZ, cmd)
+                    logger.info("Added to Windows Registry startup: %s", cmd)
                 else:
                     try:
                         winreg.DeleteValue(key, self.app_name)
@@ -91,7 +97,16 @@ class StartupManager:
     # --- macOS Implementation ---
     def _check_macos_plist(self) -> bool:
         plist_path = os.path.expanduser(f"~/Library/LaunchAgents/{self.app_name}.plist")
-        return os.path.exists(plist_path)
+        if not os.path.exists(plist_path):
+            return False
+        try:
+            import plistlib
+            with open(plist_path, "rb") as f:
+                data = plistlib.load(f)
+                return data.get("ProgramArguments") == self.get_program_arguments()
+        except Exception as e:
+            logger.debug("macOS plist check error: %s", e)
+            return False
 
     def _set_macos_plist(self, enable: bool) -> bool:
         import plistlib
@@ -101,7 +116,7 @@ class StartupManager:
         if enable:
             plist_data = {
                 "Label": self.app_name,
-                "ProgramArguments": [self.get_executable_path()],
+                "ProgramArguments": self.get_program_arguments(),
                 "RunAtLoad": True,
                 "KeepAlive": False
             }
@@ -126,7 +141,16 @@ class StartupManager:
     # --- Linux Implementation ---
     def _check_linux_desktop(self) -> bool:
         desktop_path = os.path.expanduser(f"~/.config/autostart/{self.app_name}.desktop")
-        return os.path.exists(desktop_path)
+        if not os.path.exists(desktop_path):
+            return False
+        try:
+            with open(desktop_path, "r", encoding="utf-8") as f:
+                content = f.read()
+                expected_exec = f"Exec={self.get_startup_command()}"
+                return expected_exec in content
+        except Exception as e:
+            logger.debug("Linux desktop check error: %s", e)
+            return False
 
     def _set_linux_desktop(self, enable: bool) -> bool:
         autostart_dir = os.path.expanduser("~/.config/autostart")
@@ -137,7 +161,7 @@ class StartupManager:
             desktop_content = f"""[Desktop Entry]
 Type=Application
 Name={self.app_name}
-Exec="{self.get_executable_path()}"
+Exec={self.get_startup_command()}
 X-GNOME-Autostart-enabled=true
 """
             try:

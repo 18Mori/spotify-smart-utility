@@ -71,19 +71,28 @@ class SpothashWidget:
         self.root.bind("<Leave>", self.on_leave)
         
     def toggle_startup(self):
-        current_state = self.settings_manager.get("startup_enabled", False)
+        current_state = bool(self.settings_manager.get("startup_enabled", False))
         new_state = not current_state
         success = self.startup_manager.set_startup(new_state)
         if success:
-            self.settings_manager.set("startup_enabled", new_state)
-            fg_color = "#1DB954" if new_state else "#888888"
-            self.btn_startup.configure(fg=fg_color)
-            status_str = "enabled" if new_state else "disabled"
-            messagebox.showinfo(
-                title="SpotHash - Startup Settings",
-                message=f"System startup has been successfully {status_str}.",
-                parent=self.root
-            )
+            saved = self.settings_manager.set("startup_enabled", new_state)
+            if saved:
+                fg_color = "#1DB954" if new_state else "#888888"
+                self.btn_startup.configure(fg=fg_color)
+                status_str = "enabled" if new_state else "disabled"
+                messagebox.showinfo(
+                    title="SpotHash - Startup Settings",
+                    message=f"System startup has been successfully {status_str}.",
+                    parent=self.root
+                )
+            else:
+                # Rollback startup setting if persistence fails
+                self.startup_manager.set_startup(current_state)
+                messagebox.showerror(
+                    title="SpotHash - Settings Error",
+                    message="Failed to save settings to disk. Startup registration rolled back.",
+                    parent=self.root
+                )
         else:
             messagebox.showerror(
                 title="SpotHash - Startup Error",
