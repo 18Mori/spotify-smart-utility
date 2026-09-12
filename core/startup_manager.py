@@ -137,7 +137,7 @@ class StartupManager:
             desktop_content = f"""[Desktop Entry]
 Type=Application
 Name={self.app_name}
-Exec={self.get_executable_path()}
+Exec="{self.get_executable_path()}"
 X-GNOME-Autostart-enabled=true
 """
             try:

@@ -27,7 +27,7 @@ jobs:
 
     - name: Build Executable with PyInstaller
       run: |
-        pyinstaller --noconsole --onefile --name="SpotHashWidget" main.py
+        pyinstaller --noconsole --onefile --add-data "ignored_apps.txt;." --name="SpotHashWidget" main.py
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4

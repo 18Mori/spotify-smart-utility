@@ -1,4 +1,5 @@
 import os 
+import sys
 import logging
 
 logger = logging.getLogger(__name__)
@@ -10,6 +11,16 @@ class ConfigManager:
     self.ignored_apps = set()
     
   def resolve_root_path(self, filename: str) -> str:
+    # If running as bundled PyInstaller executable, check adjacent to exe first, then bundled _MEIPASS
+    if getattr(sys, 'frozen', False):
+      exe_dir = os.path.dirname(sys.executable)
+      external_path = os.path.join(exe_dir, filename)
+      if os.path.exists(external_path):
+        return external_path
+      bundled_path = os.path.join(sys._MEIPASS, filename)
+      if os.path.exists(bundled_path):
+        return bundled_path
+
     if os.path.exists(filename):
       return os.path.abspath(filename)
     # Get the directory of the current script
