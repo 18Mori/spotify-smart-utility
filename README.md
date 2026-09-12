@@ -37,9 +37,6 @@ A minimalist, edge-docked desktop media control widget built with Python and Tki
 │   └── widget.py           # Tkinter edge-docked widget interface & controls
 ├── .gitignore
 ├── README.md
-├── ARCHITECTURE.md
-├── DIRECTORY_LAYOUT.md
-├── DEVELOPMENT.md
 ├── LICENSE
 ├── main.py                 # Main application entry point
 ├── requirements.txt
