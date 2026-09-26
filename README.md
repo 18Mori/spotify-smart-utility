@@ -1,6 +1,6 @@
 # SpotHash Widget
 
-A minimalist, edge-docked desktop media control widget built with Python and Tkinter. Inspired by Spotify's design aesthetic, SpotHash stays discreetly hidden as a thin green bar on the right side of your screen and expands on hover to grant quick media controls (Previous, Play/Pause, Next), accompanied by a system tray icon in the Windows taskbar for startup management and quitting.
+A minimalist, edge docked desktop media control widget built with Python and Tkinter. Inspired by Spotify's design aesthetic, SpotHash stays discreetly hidden as a thin green bar on the right side of your screen and expands on hover to grant quick media controls (Previous, Play/Pause, Next), accompanied by a system tray icon in the Windows taskbar for startup management and quitting.
 
 ---
 
@@ -10,7 +10,7 @@ A minimalist, edge-docked desktop media control widget built with Python and Tki
 * **System Tray Integration:** Runs a background system tray icon (next to Wi-Fi and volume) with a context menu to toggle **Launch on System Startup** and **Quit**.
 * **Global Media Keys:** Sends native OS media commands using the `keyboard` library.
 * **Automatic Audio Ducking:** Automatically lowers Spotify's volume to 15% when other system audio is active, restoring it when audio stops.
-* **Persistent User Settings:** Remembers user preferences across launches by storing `settings.json` in a persistent per-user application data directory (`%APPDATA%\SpotHash\` on Windows).
+* **Persistent User Settings:** Remembers user preferences across launches by storing `settings.json` in a persistent per user application data directory (`%APPDATA%\SpotHash\` on Windows).
 * **Standalone Executable & CI/CD:** Bundled via PyInstaller into a standalone executable with automated GitHub Actions releases.
 * **Clean Aesthetic:** Dark theme styled around Spotify's signature color palette (`#191414` / `#1DB954`).
 
@@ -37,9 +37,6 @@ A minimalist, edge-docked desktop media control widget built with Python and Tki
 │   └── widget.py           # Tkinter edge-docked media widget interface
 ├── .gitignore
 ├── README.md
-├── ARCHITECTURE.md
-├── DIRECTORY_LAYOUT.md
-├── DEVELOPMENT.md
 ├── LICENSE
 ├── main.py                 # Main application entry point
 ├── requirements.txt
@@ -114,7 +111,7 @@ To bundle SpotHash into a single standalone `.exe` using PyInstaller:
 
 ```powershell
 pip install pyinstaller
-pyinstaller --noconsole --onefile --add-data "ignored_apps.txt;." --name="SpotHashWidget" main.py
+pyinstaller --noconsole --onefile --add-data "ignored_apps.txt;." --name="SpotHash" main.py
 ```
 The compiled standalone executable will be located in the `dist/` directory.
 
