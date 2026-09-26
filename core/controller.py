@@ -25,6 +25,14 @@ class AppController:
         self.widget = SpothashWidget(on_close_callback=self.stop_application)
 
     def stop_application(self):
+        # Ensure thread safe call from nonGUI threads (like pystray tray thread)
+        if threading.current_thread() != threading.main_thread():
+            try:
+                self.widget.root.after(0, self.stop_application)
+                return
+            except Exception as e:
+                logger.error("Failed to marshal stop_application to GUI thread: %s", e)
+
         if self.is_running:
             self.is_running = False
             # Stop system tray icon
@@ -36,8 +44,8 @@ class AppController:
             # Safely quit Tkinter mainloop if running
             try:
                 self.widget.root.quit()
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error("Error quitting Tkinter mainloop: %s", e)
 
     def run(self):
         self.audio_thread.start()

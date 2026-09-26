@@ -30,17 +30,28 @@ class SystemTrayManager:
         return image
 
     def on_startup_toggled(self, icon, item):
-        current_state = self.settings_manager.get("startup_enabled", False)
+        current_state = self.get_startup_checked(item)
         new_state = not current_state
-        success = self.startup_manager.set_startup(new_state)
-        if success:
-            self.settings_manager.set("startup_enabled", new_state)
-            logger.info("System startup toggled from tray to: %s", new_state)
-        else:
-            logger.error("Failed to toggle system startup from tray.")
+        
+        os_success = self.startup_manager.set_startup(new_state)
+        if not os_success:
+            logger.error("Failed to update system startup registration in OS for new_state=%s", new_state)
+            return
+            
+        persist_success = self.settings_manager.set("startup_enabled", new_state)
+        if not persist_success:
+            logger.error("Failed to persist startup setting. Rolling back OS registration.")
+            self.startup_manager.set_startup(current_state)
+            return
+            
+        logger.info("System startup toggled from tray to: %s", new_state)
 
     def get_startup_checked(self, item):
-        return self.settings_manager.get("startup_enabled", False)
+        os_enabled = self.startup_manager.is_startup_enabled()
+        persisted = self.settings_manager.get("startup_enabled", False)
+        if os_enabled != persisted:
+            self.settings_manager.set("startup_enabled", os_enabled)
+        return os_enabled
 
     def on_quit(self, icon, item):
         if self.icon:

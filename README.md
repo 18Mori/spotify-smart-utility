@@ -61,8 +61,8 @@ A minimalist, edge-docked desktop media control widget built with Python and Tki
 ### 2. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/spothash-widget.gif
-cd spothash-widget
+git clone https://github.com/18Mori/spotify-smart-utility.git
+cd spotify-smart-utility
 ```
 
 ---
